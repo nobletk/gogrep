@@ -30,7 +30,7 @@ match one or more patterns.
 ## Usage
 
 ```
-> gogrep [OPTION...] PATTERN [FILE...]
+~> gogrep [OPTION...] PATTERN [FILE...]
 ```
 
 ### Examples
@@ -117,7 +117,7 @@ Nirvana
 ```
 
 
-* Support Stdin input pipe.
+* Support Stdin input pipe into invert search.
 
 ```
 ~> gogrep J test-data/rockbands.txt | gogrep -v Jovi
