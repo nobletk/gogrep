@@ -9,9 +9,10 @@ import (
 )
 
 type config struct {
-	invertMatch bool
-	recurse     bool
-	printPath   bool
+	caseInsensitive bool
+	invertMatch     bool
+	recurse         bool
+	printPath       bool
 }
 
 type application struct {
@@ -23,6 +24,7 @@ func main() {
 
 	pflag.BoolVarP(&cfg.recurse, "recursive", "r", false, "Read all files under each directory, recursively")
 	pflag.BoolVarP(&cfg.invertMatch, "invert-match", "v", false, "Select non-matching lines")
+	pflag.BoolVarP(&cfg.caseInsensitive, "case-insensitive", "i", false, "Case insensitive search")
 
 	pflag.Usage = func() {
 		var buf bytes.Buffer
@@ -49,6 +51,10 @@ func main() {
 
 	pattern := pflag.Arg(0)
 	paths := pflag.Args()[1:]
+
+	if app.config.caseInsensitive {
+		pattern = "(?i)" + pattern
+	}
 
 	if len(paths) == 0 {
 		err := app.ProcessStdin(pattern)

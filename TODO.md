@@ -4,6 +4,6 @@
 - [x] Implement inverting search excluding pattern from matches "-v".
 - [x] Implement "\d" and "\w" in the search pattern.
 - [x] Implement matches "^" beginning and "$" end of the line.
-- [ ] Implement support for case insensitive search "-i".
+- [x] Implement support for case insensitive search "-i".
 - [x] Fully implement reading from stdin.
 - [x] Add help flag.
