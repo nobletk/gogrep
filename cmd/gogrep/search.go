@@ -29,13 +29,7 @@ func (app *application) ProcessStdin(pattern string) error {
 					app.invertMatchStdin(line, []byte(pattern))
 					continue
 				}
-				if pattern == "\\w" || pattern == "\\d" {
-					app.regexMatchStdin(line, pattern)
-					continue
-				}
-				if pattern == "" || bytes.Contains(line, []byte(pattern)) {
-					fmt.Println(string(line))
-				}
+				app.patternMatchStdin(line, pattern)
 			}
 		}
 		if err == io.EOF {
@@ -120,25 +114,13 @@ func (app *application) processFile(path, pattern string) error {
 					app.invertMatch(path, line, []byte(pattern))
 					continue
 				}
-				if pattern == "\\w" || pattern == "\\d" {
-					app.regexMatch(path, line, pattern)
-					continue
-				}
-				if pattern == "" || bytes.Contains(line, []byte(pattern)) {
-					if app.config.printPath {
-						fmt.Printf("%s:", path)
-					}
-					fmt.Println(string(line))
-				}
+				app.patternMatch(path, line, pattern)
 			}
 		}
 		if err == io.EOF {
 			if len(leftover) > 0 && app.config.invertMatch {
 				app.invertMatch(path, leftover, []byte(pattern))
 				continue
-			}
-			if len(leftover) > 0 && (pattern == "" || bytes.Contains(leftover, []byte(pattern))) {
-				fmt.Println(string(leftover))
 			}
 			break
 		}
@@ -164,7 +146,7 @@ func (app *application) invertMatchStdin(line, pattern []byte) {
 	}
 }
 
-func (app *application) regexMatch(path string, line []byte, pattern string) {
+func (app *application) patternMatch(path string, line []byte, pattern string) {
 	re, err := regexp.Compile(pattern)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error compiling regex: %v\n", err)
@@ -178,7 +160,7 @@ func (app *application) regexMatch(path string, line []byte, pattern string) {
 	}
 }
 
-func (app *application) regexMatchStdin(line []byte, pattern string) {
+func (app *application) patternMatchStdin(line []byte, pattern string) {
 	re, err := regexp.Compile(pattern)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error compiling regex: %v\n", err)

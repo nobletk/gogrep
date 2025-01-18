@@ -3,7 +3,7 @@
 - [x] Implement recursing a directory tree "-r".
 - [x] Implement inverting search excluding pattern from matches "-v".
 - [x] Implement "\d" and "\w" in the search pattern.
-- [ ] Implement matches "^" beginning and "$" end of the line.
+- [x] Implement matches "^" beginning and "$" end of the line.
 - [ ] Implement support for case insensitive search "-i".
-- [ ] Fully implement reading from stdin.
+- [x] Fully implement reading from stdin.
 - [x] Add help flag.
