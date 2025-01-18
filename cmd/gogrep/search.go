@@ -24,12 +24,20 @@ func (app *application) ProcessStdin(pattern string) error {
 			leftover = lines[len(lines)-1]
 
 			for _, line := range lines[:len(lines)-1] {
+				if app.config.invertMatch {
+					app.invertMatchStdin(line, []byte(pattern))
+					continue
+				}
 				if pattern == "" || bytes.Contains(line, []byte(pattern)) {
 					fmt.Println(string(line))
 				}
 			}
 		}
 		if err == io.EOF {
+			if len(leftover) > 0 && app.config.invertMatch {
+				app.invertMatchStdin(leftover, []byte(pattern))
+				continue
+			}
 			if len(leftover) > 0 && (pattern == "" || bytes.Contains(leftover, []byte(pattern))) {
 				fmt.Println(string(leftover))
 			}
@@ -103,6 +111,10 @@ func (app *application) processFile(path, pattern string) error {
 			leftover = lines[len(lines)-1]
 
 			for _, line := range lines[:len(lines)-1] {
+				if app.config.invertMatch {
+					app.invertMatch(path, line, []byte(pattern))
+					continue
+				}
 				if pattern == "" || bytes.Contains(line, []byte(pattern)) {
 					if app.config.printPath {
 						fmt.Printf("%s:", path)
@@ -112,6 +124,10 @@ func (app *application) processFile(path, pattern string) error {
 			}
 		}
 		if err == io.EOF {
+			if len(leftover) > 0 && app.config.invertMatch {
+				app.invertMatch(path, leftover, []byte(pattern))
+				continue
+			}
 			if len(leftover) > 0 && (pattern == "" || bytes.Contains(leftover, []byte(pattern))) {
 				fmt.Println(string(leftover))
 			}
@@ -122,4 +138,19 @@ func (app *application) processFile(path, pattern string) error {
 		}
 	}
 	return nil
+}
+
+func (app *application) invertMatch(path string, line, pattern []byte) {
+	if !bytes.Contains(line, pattern) {
+		if app.config.printPath {
+			fmt.Printf("%s:", path)
+		}
+		fmt.Println(string(line))
+	}
+}
+
+func (app *application) invertMatchStdin(line, pattern []byte) {
+	if !bytes.Contains(line, pattern) {
+		fmt.Println(string(line))
+	}
 }

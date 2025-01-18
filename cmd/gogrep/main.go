@@ -9,8 +9,9 @@ import (
 )
 
 type config struct {
-	recurse   bool
-	printPath bool
+	invertMatch bool
+	recurse     bool
+	printPath   bool
 }
 
 type application struct {
@@ -21,6 +22,7 @@ func main() {
 	var cfg config
 
 	pflag.BoolVarP(&cfg.recurse, "recursive", "r", false, "Read all files under each directory, recursively")
+	pflag.BoolVarP(&cfg.invertMatch, "invert-match", "v", false, "Select non-matching lines")
 
 	pflag.Usage = func() {
 		var buf bytes.Buffer

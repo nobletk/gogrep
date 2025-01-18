@@ -1,9 +1,9 @@
 - [x] Implement empty expression.
 - [x] Implement simple one letter pattern.
 - [x] Implement recursing a directory tree "-r".
-- [ ] Implement inverting search excluding pattern from matches "-v".
+- [x] Implement inverting search excluding pattern from matches "-v".
 - [ ] Implement "\d" and "\w" in the search pattern.
 - [ ] Implement matches "^" beginning and "$" end of the line.
 - [ ] Implement support for case insensitive search "-i".
 - [ ] Fully implement reading from stdin.
-- [ ] Add help flag.
+- [x] Add help flag.
