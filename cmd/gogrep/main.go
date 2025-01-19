@@ -14,6 +14,7 @@ type config struct {
 	invertMatch     bool
 	recurse         bool
 	printPath       bool
+	matchCount      int
 }
 
 type application struct {
@@ -67,7 +68,7 @@ func main() {
 		err := app.ProcessStdin(regexPattern)
 		if err != nil {
 			fmt.Println(os.Stderr, err)
-			os.Exit(2)
+			os.Exit(1)
 		}
 	} else {
 		if len(paths) > 1 || app.config.recurse {
@@ -76,9 +77,12 @@ func main() {
 		err := app.ProcessPaths(paths, regexPattern)
 		if err != nil {
 			fmt.Println(os.Stderr, err)
-			os.Exit(2)
+			os.Exit(1)
 		}
 	}
 
+	if app.config.matchCount == 0 {
+		os.Exit(1)
+	}
 	os.Exit(0)
 }

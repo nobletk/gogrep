@@ -139,6 +139,7 @@ func (app *application) processFile(path string, pattern *regexp.Regexp) error {
 
 func (app *application) invertMatch(path string, line []byte, pattern *regexp.Regexp) {
 	if !pattern.Match(line) {
+		app.config.matchCount++
 		if app.config.printPath {
 			fmt.Printf("%s:", path)
 		}
@@ -148,12 +149,14 @@ func (app *application) invertMatch(path string, line []byte, pattern *regexp.Re
 
 func (app *application) invertMatchStdin(line []byte, pattern *regexp.Regexp) {
 	if !pattern.Match(line) {
+		app.config.matchCount++
 		fmt.Println(string(line))
 	}
 }
 
 func (app *application) patternMatch(path string, line []byte, pattern *regexp.Regexp) {
 	if pattern.Match(line) {
+		app.config.matchCount++
 		if app.config.printPath {
 			fmt.Printf("%s:", path)
 		}
@@ -163,6 +166,7 @@ func (app *application) patternMatch(path string, line []byte, pattern *regexp.R
 
 func (app *application) patternMatchStdin(line []byte, pattern *regexp.Regexp) {
 	if pattern.Match(line) {
+		app.config.matchCount++
 		fmt.Println(string(line))
 	}
 }
