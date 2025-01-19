@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"regexp"
 
 	"github.com/spf13/pflag"
 )
@@ -56,8 +57,14 @@ func main() {
 		pattern = "(?i)" + pattern
 	}
 
+	regexPattern, err := regexp.Compile(pattern)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error compiling regex: %v\n", err)
+		os.Exit(1)
+	}
+
 	if len(paths) == 0 {
-		err := app.ProcessStdin(pattern)
+		err := app.ProcessStdin(regexPattern)
 		if err != nil {
 			fmt.Println(os.Stderr, err)
 			os.Exit(2)
@@ -66,7 +73,7 @@ func main() {
 		if len(paths) > 1 || app.config.recurse {
 			app.config.printPath = true
 		}
-		err := app.ProcessPaths(paths, pattern)
+		err := app.ProcessPaths(paths, regexPattern)
 		if err != nil {
 			fmt.Println(os.Stderr, err)
 			os.Exit(2)

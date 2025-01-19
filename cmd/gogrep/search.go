@@ -9,7 +9,7 @@ import (
 	"regexp"
 )
 
-func (app *application) ProcessStdin(pattern string) error {
+func (app *application) ProcessStdin(pattern *regexp.Regexp) error {
 	const bufferSize = 4096
 	buffer := make([]byte, bufferSize)
 
@@ -26,19 +26,19 @@ func (app *application) ProcessStdin(pattern string) error {
 
 			for _, line := range lines[:len(lines)-1] {
 				if app.config.invertMatch {
-					app.invertMatchStdin(line, []byte(pattern))
+					app.invertMatchStdin(line, pattern)
 					continue
 				}
 				app.patternMatchStdin(line, pattern)
 			}
 		}
 		if err == io.EOF {
-			if len(leftover) > 0 && app.config.invertMatch {
-				app.invertMatchStdin(leftover, []byte(pattern))
-				continue
-			}
-			if len(leftover) > 0 && (pattern == "" || bytes.Contains(leftover, []byte(pattern))) {
-				fmt.Println(string(leftover))
+			if len(leftover) > 0 {
+				if app.config.invertMatch {
+					app.invertMatchStdin(leftover, pattern)
+					continue
+				}
+				app.patternMatchStdin(leftover, pattern)
 			}
 			break
 		}
@@ -46,10 +46,11 @@ func (app *application) ProcessStdin(pattern string) error {
 			return fmt.Errorf("Error reading stdin: %W", err)
 		}
 	}
+
 	return nil
 }
 
-func (app *application) ProcessPaths(paths []string, pattern string) error {
+func (app *application) ProcessPaths(paths []string, pattern *regexp.Regexp) error {
 	for _, path := range paths {
 		info, err := os.Stat(path)
 		if err != nil {
@@ -57,11 +58,12 @@ func (app *application) ProcessPaths(paths []string, pattern string) error {
 			continue
 		}
 
-		if info.IsDir() && !app.config.recurse {
-			fmt.Printf("gogrep: %s: Is a directory\n", path)
-			continue
-		}
 		if info.IsDir() {
+			if !app.config.recurse {
+				fmt.Printf("gogrep: %s: Is a directory\n", path)
+				continue
+			}
+
 			err := filepath.WalkDir(path, func(subPath string, d os.DirEntry, err error) error {
 				if err != nil {
 					fmt.Printf("Error accessing path %q: %v\n", subPath, err)
@@ -88,7 +90,7 @@ func (app *application) ProcessPaths(paths []string, pattern string) error {
 	return nil
 }
 
-func (app *application) processFile(path, pattern string) error {
+func (app *application) processFile(path string, pattern *regexp.Regexp) error {
 	reader, err := os.Open(path)
 	if err != nil {
 		return err
@@ -111,16 +113,19 @@ func (app *application) processFile(path, pattern string) error {
 
 			for _, line := range lines[:len(lines)-1] {
 				if app.config.invertMatch {
-					app.invertMatch(path, line, []byte(pattern))
+					app.invertMatch(path, line, pattern)
 					continue
 				}
 				app.patternMatch(path, line, pattern)
 			}
 		}
 		if err == io.EOF {
-			if len(leftover) > 0 && app.config.invertMatch {
-				app.invertMatch(path, leftover, []byte(pattern))
-				continue
+			if len(leftover) > 0 {
+				if app.config.invertMatch {
+					app.invertMatch(path, leftover, pattern)
+					continue
+				}
+				app.patternMatch(path, leftover, pattern)
 			}
 			break
 		}
@@ -128,11 +133,12 @@ func (app *application) processFile(path, pattern string) error {
 			return fmt.Errorf("Error reading file: %W", err)
 		}
 	}
+
 	return nil
 }
 
-func (app *application) invertMatch(path string, line, pattern []byte) {
-	if !bytes.Contains(line, pattern) {
+func (app *application) invertMatch(path string, line []byte, pattern *regexp.Regexp) {
+	if !pattern.Match(line) {
 		if app.config.printPath {
 			fmt.Printf("%s:", path)
 		}
@@ -140,19 +146,14 @@ func (app *application) invertMatch(path string, line, pattern []byte) {
 	}
 }
 
-func (app *application) invertMatchStdin(line, pattern []byte) {
-	if !bytes.Contains(line, pattern) {
+func (app *application) invertMatchStdin(line []byte, pattern *regexp.Regexp) {
+	if !pattern.Match(line) {
 		fmt.Println(string(line))
 	}
 }
 
-func (app *application) patternMatch(path string, line []byte, pattern string) {
-	re, err := regexp.Compile(pattern)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error compiling regex: %v\n", err)
-		os.Exit(1)
-	}
-	if re.Match(line) {
+func (app *application) patternMatch(path string, line []byte, pattern *regexp.Regexp) {
+	if pattern.Match(line) {
 		if app.config.printPath {
 			fmt.Printf("%s:", path)
 		}
@@ -160,13 +161,8 @@ func (app *application) patternMatch(path string, line []byte, pattern string) {
 	}
 }
 
-func (app *application) patternMatchStdin(line []byte, pattern string) {
-	re, err := regexp.Compile(pattern)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error compiling regex: %v\n", err)
-		os.Exit(1)
-	}
-	if re.Match(line) {
+func (app *application) patternMatchStdin(line []byte, pattern *regexp.Regexp) {
+	if pattern.Match(line) {
 		fmt.Println(string(line))
 	}
 }
