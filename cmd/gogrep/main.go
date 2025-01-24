@@ -47,9 +47,8 @@ func main() {
 		}
 	*/
 
-	app := &application{
-		config: cfg,
-	}
+	app := NewApplication()
+	app.config = cfg
 
 	pattern := pflag.Arg(0)
 	paths := pflag.Args()[1:]
@@ -60,14 +59,14 @@ func main() {
 
 	regexPattern, err := regexp.Compile(pattern)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error compiling regex: %v\n", err)
+		fmt.Fprintln(os.Stderr, fmt.Errorf("Error compiling regex: %v", err))
 		os.Exit(1)
 	}
 
 	if len(paths) == 0 {
 		err := app.ProcessStdin(regexPattern)
 		if err != nil {
-			fmt.Println(os.Stderr, err)
+			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
 		}
 	} else {
@@ -76,7 +75,7 @@ func main() {
 		}
 		err := app.ProcessPaths(paths, regexPattern)
 		if err != nil {
-			fmt.Println(os.Stderr, err)
+			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
 		}
 	}
@@ -85,4 +84,12 @@ func main() {
 		os.Exit(1)
 	}
 	os.Exit(0)
+}
+
+func NewApplication() *application {
+	return &application{
+		config: config{
+			matchCount: 0,
+		},
+	}
 }
